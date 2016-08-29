@@ -17,6 +17,7 @@ var oceanFragmentShader = require("../shaders/fragment/oceanFragmentShader.glsl"
 var noise = require("../shaders/noise/classicNoise3D.glsl");
 var simplexNoise = require("../shaders/noise/noise3d.glsl");
 var classicNoise = require("../shaders/noise/classicnoise3D.glsl");
+var cellularNoise = require("../shaders/noise/cellular3D.glsl");
 
 
 init();
@@ -36,28 +37,61 @@ function init() {
       window.innerWidth / window.innerHeight, 
       1, 
       10000 );
-  camera.position.z = 100;
-  camera.target = new THREE.Vector3( 0, 0, 0 );
-
+  camera.position.z = 20;
+  camera.position.x = 0;
+  camera.position.y = 0;
+  camera.lookAt(new THREE.Vector3(0,0,0));
   scene.add(camera);
+  var light = new THREE.PointLight(0xffffff);
+  var lightPos = new THREE.Vector3(500, 5000, 5000);
+  light.position = lightPos;
+  scene.add(light);
+
   var uniforms = {
     time: {
+        type: "f",
+        value: 0.0
+    },
+    altitude: {
+        type: "f",
+        value: 40.0
+    },
+    defaultAltitude: {
+        type: "f",
+        value: 40.0
+    },
+    noiseOffset: {
+        type: "f",
+        value: 0.0
+    },
+    surfaceIntensity: {
           type: "f",
-          value: 0.0
-        }
+          value: 0.01
+    },
+    lightPos: {
+      type: "v3",
+      value: lightPos
+    },
+    mountainHeight: {
+      type: "f",
+      value: 2.0
+    },
+    mountainFrequency: {
+      type: "f",
+      value: 4.0
+    },
+    derivatives: true
   }
 
   material = new THREE.ShaderMaterial({
     uniforms: uniforms,
-    vertexShader: classicNoise() +  landVertexShader(),
-    fragmentShader: landFragmentShader()
+    vertexShader: simplexNoise() + landVertexShader(),
+    fragmentShader: simplexNoise() + landFragmentShader()
   });
       
-  var planeGeometry = new THREE.PlaneGeometry(20, 20, 300);
-
       // create a sphere and assign the material
       mesh = new THREE.Mesh( 
-          new THREE.IcosahedronGeometry(20, 4), 
+          new THREE.SphereBufferGeometry(20, 256, 256), 
           material 
       );
       scene.add(mesh);
@@ -67,13 +101,25 @@ function init() {
       // create the renderer and attach it to the DOM
       renderer = new THREE.WebGLRenderer();
       renderer.setSize(window.innerWidth, window.innerHeight);
+      trackballControls = new THREE.TrackballControls(camera);
+      trackballControls.rotateSpeed = 1.0;
+              trackballControls.zoomSpeed = 1.0;
+              trackballControls.panSpeed = 1.0;
+              trackballControls.staticMoving = true;
+      //controls.target.set(0,0,0);
       container.appendChild(renderer.domElement);
 
 }
+/*function animate() {
+  requestAnimationFrame( animate );
+  trackballControls.update();
+}*/
 function render() {
   // let there be light
   material.uniforms['time'].value = .00025 * (Date.now() - start);
   renderer.render( scene, camera );
+  trackballControls.update();
   requestAnimationFrame( render );
+
       
   }

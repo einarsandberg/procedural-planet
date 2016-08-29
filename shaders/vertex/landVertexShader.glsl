@@ -1,30 +1,37 @@
-varying vec3 vNormal;
+
 uniform float time;
+uniform float altitude;
+uniform float noiseOffset;
+uniform float surfaceIntensity;
+uniform float mountainHeight;
+uniform float mountainFrequency;
 varying float noise;
-varying vec2 vUv;
-float turbulence( vec3 p ) {
-    float w = 100.0;
-    float t = -.5;
-    for (float f = 1.0 ; f <= 10.0 ; f++ ){
-        float power = pow( 2.0, f );
-        t += abs( pnoise( vec3( power * p ), vec3( 10.0, 10.0, 10.0 ) ) / power );
-    }
-    return t;
-}
+varying vec2 st;
+varying float elevation;
+varying vec3 pos;
+
+
+varying vec4 vPosition;
+varying vec4 vNormal;
 
 void main() {
-	vUv = uv;
-	vNormal = normal;
-    // get a turbulent 3d noise using the normal, normal to high freq
-    noise = 10.0 *  -.10 * turbulence( .5 * normal );
-    // get a 3d noise using the position, low frequency
-    float b = 5.0 * pnoise( 0.05 * position, vec3( 100.0 ) );
-    // compose both noises
-    float displacement = - 10. * noise + b;
-    
-    // move the position along the normal and transform it
-    vec3 newPosition = position + normal * displacement;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
+    st = uv;
+
+    float n, waterElev;
+    vPosition = modelMatrix * vec4(position, 1.0);
+    vNormal = modelMatrix * vec4(normal, 1.0);
+
+    elevation = 0.0;
+    for (float i = 1.0; i < 10.0; i++) {
+        elevation+= mountainHeight* (1.0/(i*2.0)) * (snoise(mountainFrequency*(i/50.0)*vec3(vPosition)));
+    }
+
+    vPosition = vPosition + vNormal * 0.2 * elevation;
+
+    elevation = elevation*-1.0;
+
+    gl_Position = projectionMatrix * viewMatrix * vPosition;
 
 }
+
 
