@@ -1,8 +1,6 @@
 
 uniform float time;
 uniform float altitude;
-uniform float noiseOffset;
-uniform float surfaceIntensity;
 uniform float mountainHeight;
 uniform float mountainFrequency;
 varying float noise;
@@ -16,8 +14,6 @@ varying vec4 vNormal;
 
 void main() {
     st = uv;
-
-    float n, waterElev;
     vPosition = modelMatrix * vec4(position, 1.0);
     vNormal = modelMatrix * vec4(normal, 1.0);
 
@@ -28,7 +24,7 @@ void main() {
 
     vPosition = vPosition + vNormal * 0.2 * elevation;
 
-    elevation = elevation*-1.0;
+    elevation = elevation * -1.0;
 
     gl_Position = projectionMatrix * viewMatrix * vPosition;
 

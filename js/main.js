@@ -56,18 +56,6 @@ function init() {
         type: "f",
         value: 40.0
     },
-    defaultAltitude: {
-        type: "f",
-        value: 40.0
-    },
-    noiseOffset: {
-        type: "f",
-        value: 0.0
-    },
-    surfaceIntensity: {
-          type: "f",
-          value: 0.01
-    },
     lightPos: {
       type: "v3",
       value: lightPos
