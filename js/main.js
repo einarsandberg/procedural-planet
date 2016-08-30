@@ -3,7 +3,8 @@ var container,
     renderer, 
     scene, 
     camera, 
-    mesh, 
+    land,
+    ocean, 
     start = Date.now(),
     fov = 30;
 
@@ -60,54 +61,67 @@ function init() {
       type: "v3",
       value: lightPos
     },
+    cameraPos: {
+      type: "v3",
+      value: camera.position
+    },
     mountainHeight: {
       type: "f",
       value: 2.0
     },
     mountainFrequency: {
       type: "f",
-      value: 4.0
+      value: 5.0
+    },
+    landFrequency: {
+
     },
     derivatives: true
   }
 
-  material = new THREE.ShaderMaterial({
+  landMaterial = new THREE.ShaderMaterial({
     uniforms: uniforms,
     vertexShader: simplexNoise() + landVertexShader(),
     fragmentShader: simplexNoise() + landFragmentShader()
   });
+  oceanMaterial = new THREE.ShaderMaterial({
+    uniforms: uniforms,
+    vertexShader: simplexNoise() + oceanVertexShader(),
+    fragmentShader: simplexNoise() + oceanFragmentShader()
+  });
       
       // create a sphere and assign the material
-      mesh = new THREE.Mesh( 
+      land = new THREE.Mesh( 
           new THREE.SphereBufferGeometry(20, 256, 256), 
-          material 
+          landMaterial 
       );
-      scene.add(mesh);
+      ocean = new THREE.Mesh(
+        new THREE.SphereBufferGeometry(20, 256, 256),
+        oceanMaterial);
+      scene.add(land);
+      scene.add(ocean);
 
-      mesh.translateZ(-100);
+      ocean.translateZ(-100);
+      land.translateZ(-100);
 
       // create the renderer and attach it to the DOM
       renderer = new THREE.WebGLRenderer();
       renderer.setSize(window.innerWidth, window.innerHeight);
       trackballControls = new THREE.TrackballControls(camera);
       trackballControls.rotateSpeed = 1.0;
-              trackballControls.zoomSpeed = 1.0;
-              trackballControls.panSpeed = 1.0;
-              trackballControls.staticMoving = true;
+      trackballControls.zoomSpeed = 1.0;
+      trackballControls.panSpeed = 1.0;
+      trackballControls.staticMoving = true;
       //controls.target.set(0,0,0);
       container.appendChild(renderer.domElement);
 
 }
-/*function animate() {
-  requestAnimationFrame( animate );
-  trackballControls.update();
-}*/
+
 function render() {
-  // let there be light
-  material.uniforms['time'].value = .00025 * (Date.now() - start);
-  renderer.render( scene, camera );
+  landMaterial.uniforms['time'].value = .00025 * (Date.now() - start);
+  renderer.render(scene, camera);
   trackballControls.update();
-  requestAnimationFrame( render );
+  requestAnimationFrame(render);
 
       
-  }
+}

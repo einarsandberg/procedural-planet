@@ -1,7 +1,5 @@
 uniform float time;
 uniform float altitude;
-uniform float noiseOffset;
-uniform float surfaceIntensity;
 varying vec3 vNormal;
 varying float noise;
 varying vec2 st;

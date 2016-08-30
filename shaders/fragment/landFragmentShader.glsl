@@ -1,14 +1,17 @@
 #extension GL_OES_standard_derivatives : enable
+
+uniform vec3 lightPos;
+uniform vec3 cameraPos;
+varying vec3 pos;
+varying float elevation;
 varying vec4 vNormal;
 varying vec4 vPosition;
 varying float noise;
 varying vec2 st;
-uniform vec3 lightPos;
-varying vec3 pos;
-varying float elevation;
 
 const vec3 ambientColor = vec3(0.15, 0.15, 0.15);
-const vec3 specColor = vec3(1.0, 1.0, 1.0);
+const vec3 diffuseColor = vec3(0.5, 0.0, 0.0);
+const vec3 specularColor = vec3(1.0, 1.0, 1.0);
 vec3 gravelColor;
 vec3 landColor;
 vec3 sandColor;
@@ -35,19 +38,37 @@ void initColors() {
 void main() {
 
    initColors();
+   // phong blinn model
+   vec3 newNormal = normalize(cross(dFdx(vec3(vNormal)), dFdy(vec3(vNormal))));
+   vec3 lightDir = normalize(lightPos - vec3(vPosition));
+
+   float lambertian = max(dot(lightDir, newNormal), 0.0);
+   float specular = 0.0;
+
+     if(lambertian > 0.0) {
+       vec3 viewDir = normalize(-vec3(newNormal));
+       vec3 halfDir = normalize(lightDir + viewDir);
+       float specAngle = max(dot(halfDir, newNormal), 0.0);
+       specular = pow(specAngle, 16.0);
+     }
 
    // interpolation distance
    float interpolationDist = 0.3;
 
-   vec2 oceanRange = vec2(-4.0, -0.2);
+   /*vec2 oceanRange = vec2(-4.0, -0.2);
    vec2 sandRange = vec2(-0.2, 0.08);
    vec2 landRange = vec2(0.08, 0.5);
    vec2 gravelRange = vec2(0.5, 0.8);
-   vec2 snowRange = vec2(0.8, 2.0);
+   vec2 snowRange = vec2(0.8, 2.0);*/
+   //vec2 oceanRange = vec2(-4.0, 0.5);
+   vec2 sandRange = vec2(0.0, 0.28);
+   vec2 landRange = vec2(0.28, 0.7);
+   vec2 gravelRange = vec2(0.7, 1.0);
+   vec2 snowRange = vec2(1.0, 2.2);
 
    // apply correct component based on elevation
-   float ocean = smoothstep(oceanRange.x - interpolationDist, oceanRange.x, elevation) - 
-      smoothstep(oceanRange.y - interpolationDist, oceanRange.y,  elevation);
+  /* float ocean = smoothstep(oceanRange.x - interpolationDist, oceanRange.x, elevation) - 
+      smoothstep(oceanRange.y - interpolationDist, oceanRange.y,  elevation);*/
    float sand = smoothstep(sandRange.x - interpolationDist, sandRange.x, elevation) - 
       smoothstep(sandRange.y - interpolationDist, sandRange.y, elevation);
    float land = smoothstep(landRange.x - interpolationDist, landRange.x, elevation) - 
@@ -56,17 +77,17 @@ void main() {
       smoothstep(gravelRange.y - interpolationDist, gravelRange.y, elevation);
    float snow = smoothstep(snowRange.x - interpolationDist, snowRange.x, elevation) - 
       smoothstep(snowRange.y - interpolationDist, snowRange.y, elevation);
-   
-
-   // apply colors
+      // apply colors
    finalColor = vec3(0.0, 0.0, 0.0);
-   finalColor = mix(finalColor, oceanColor, ocean);
+   //finalColor = mix(finalColor, oceanColor, ocean);
    finalColor = mix(finalColor, sandColor, sand);
    finalColor = mix(finalColor, landColor, land);
    finalColor = mix(finalColor, gravelColor, gravel);
    finalColor = mix(finalColor, snowColor, snow);
 
-   gl_FragColor = vec4(finalColor, 1.0);
 
+  // finalColor = mix(finalColor, snowColor, snow);
+   //gl_FragColor = vec4(ambientColor + lambertian * finalColor + specular  * specularColor, 1.0);
+   gl_FragColor = vec4(finalColor, 1.0);
 
 }
