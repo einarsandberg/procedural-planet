@@ -86,8 +86,7 @@ void main() {
    finalColor = mix(finalColor, snowColor, snow);
 
 
-  // finalColor = mix(finalColor, snowColor, snow);
-   //gl_FragColor = vec4(ambientColor + lambertian * finalColor + specular  * specularColor, 1.0);
-   gl_FragColor = vec4(finalColor, 1.0);
+   gl_FragColor = vec4(ambientColor + lambertian * finalColor + specular  * specularColor, 1.0);
+   //gl_FragColor = vec4(finalColor, 1.0);
 
 }

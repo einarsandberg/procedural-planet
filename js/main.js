@@ -6,8 +6,19 @@ var container,
     land,
     ocean, 
     start = Date.now(),
-    fov = 30;
+    fov = 30,
+    mountainHeight = {
+      type: "f",
+      value: 2.0
+    },
+    mountainFrequency = {
+      type: "f",
+      value: 5.0
+    },
+    waterLevelScale = 1;
 
+var width = window.innerWidth - 100;
+var height = window.innerHeight - 100;
 // Vertex shaders
 var landVertexShader = require("../shaders/vertex/landVertexShader.glsl");
 var oceanVertexShader = require("../shaders/vertex/oceanVertexShader.glsl")
@@ -16,13 +27,26 @@ var landFragmentShader = require("../shaders/fragment/landFragmentShader.glsl");
 var oceanFragmentShader = require("../shaders/fragment/oceanFragmentShader.glsl");
 // noise functions
 var noise = require("../shaders/noise/classicNoise3D.glsl");
-var simplexNoise = require("../shaders/noise/noise3d.glsl");
+var simplexNoise = require("../shaders/noise/noise3D.glsl");
+var simplexNoise4D = require("../shaders/noise/noise4D.glsl");
 var classicNoise = require("../shaders/noise/classicnoise3D.glsl");
 var cellularNoise = require("../shaders/noise/cellular3D.glsl");
-
-
+// onchange functions
+$(document).ready(function(){
+  $("#mountain-height-slider").on("input", function() {
+    mountainHeight.value = $(this).val();
+  });
+  $("#mountain-frequency-slider").on("input", function() {
+    mountainFrequency.value = $(this).val();
+  });
+  $("#water-level-slider").on("input", function() {
+    waterLevelScale = $(this).val();
+  });
+});
 init();
 render();
+
+
 function init() {
   // grab the container from the DOM
 
@@ -35,7 +59,7 @@ function init() {
   // and place it 100 units away, looking towards the center of the scene
   camera = new THREE.PerspectiveCamera( 
       fov, 
-      window.innerWidth / window.innerHeight, 
+      width / height, 
       1, 
       10000 );
   camera.position.z = 20;
@@ -65,17 +89,8 @@ function init() {
       type: "v3",
       value: camera.position
     },
-    mountainHeight: {
-      type: "f",
-      value: 2.0
-    },
-    mountainFrequency: {
-      type: "f",
-      value: 5.0
-    },
-    landFrequency: {
-
-    },
+    mountainHeight: mountainHeight,
+    mountainFrequency: mountainFrequency,
     derivatives: true
   }
 
@@ -86,8 +101,8 @@ function init() {
   });
   oceanMaterial = new THREE.ShaderMaterial({
     uniforms: uniforms,
-    vertexShader: simplexNoise() + oceanVertexShader(),
-    fragmentShader: simplexNoise() + oceanFragmentShader()
+    vertexShader: simplexNoise4D() + oceanVertexShader(),
+    fragmentShader: simplexNoise4D() + oceanFragmentShader()
   });
       
       // create a sphere and assign the material
@@ -106,22 +121,28 @@ function init() {
 
       // create the renderer and attach it to the DOM
       renderer = new THREE.WebGLRenderer();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      trackballControls = new THREE.TrackballControls(camera);
+      renderer.setSize(width, height);
+      trackballControls = new THREE.TrackballControls(camera, container);
       trackballControls.rotateSpeed = 1.0;
       trackballControls.zoomSpeed = 1.0;
       trackballControls.panSpeed = 1.0;
       trackballControls.staticMoving = true;
       //controls.target.set(0,0,0);
       container.appendChild(renderer.domElement);
+      console.log(ocean.geometry.attributes.radius);
+
 
 }
 
 function render() {
   landMaterial.uniforms['time'].value = .00025 * (Date.now() - start);
+  landMaterial.uniforms['mountainHeight'].value = mountainHeight.value;
+  landMaterial.uniforms['mountainFrequency'].value = mountainFrequency.value;
+  ocean.scale.x = waterLevelScale;
+  ocean.scale.y = waterLevelScale;
+  ocean.scale.z = waterLevelScale;
   renderer.render(scene, camera);
   trackballControls.update();
   requestAnimationFrame(render);
 
-      
 }
