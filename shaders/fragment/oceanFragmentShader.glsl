@@ -23,6 +23,7 @@ void main()
 	    float specAngle = max(dot(halfDir, newNormal), 0.0);
 	    specular = pow(specAngle, 16.0);
 	  }
-	gl_FragColor = vec4(ambientColor + lambertian * oceanColor + specular  * specularColor, 1.0);
+	gl_FragColor = vec4(oceanColor, 1.0);
+	//gl_FragColor = vec4(ambientColor + lambertian * oceanColor + specular  * specularColor, 1.0);
 
 }

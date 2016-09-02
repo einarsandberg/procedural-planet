@@ -4,16 +4,21 @@ var container,
     scene, 
     camera, 
     land,
-    ocean, 
+    ocean,
+    sky,
     start = Date.now(),
     fov = 30,
     mountainHeight = {
       type: "f",
       value: 2.0
     },
-    mountainFrequency = {
+    islandFrequency = {
       type: "f",
       value: 5.0
+    },
+    grassAmount = {
+      type: "f",
+      value: 0.28
     },
     waterLevelScale = 1;
 
@@ -22,22 +27,25 @@ var height = window.innerHeight - 100;
 // Vertex shaders
 var landVertexShader = require("../shaders/vertex/landVertexShader.glsl");
 var oceanVertexShader = require("../shaders/vertex/oceanVertexShader.glsl")
+var skyVertexShader = require("../shaders/vertex/skyVertexShader.glsl");
 // Fragment shaders
 var landFragmentShader = require("../shaders/fragment/landFragmentShader.glsl");
 var oceanFragmentShader = require("../shaders/fragment/oceanFragmentShader.glsl");
+var skyFragmentShader = require("../shaders/fragment/skyFragmentShader.glsl");
 // noise functions
 var noise = require("../shaders/noise/classicNoise3D.glsl");
 var simplexNoise = require("../shaders/noise/noise3D.glsl");
 var simplexNoise4D = require("../shaders/noise/noise4D.glsl");
+var simplexNoise2D = require("../shaders/noise/noise2D.glsl");
 var classicNoise = require("../shaders/noise/classicnoise3D.glsl");
-var cellularNoise = require("../shaders/noise/cellular3D.glsl");
+var cellularNoise = require("../shaders/noise/cellular2x2.glsl");
 // onchange functions
 $(document).ready(function(){
   $("#mountain-height-slider").on("input", function() {
     mountainHeight.value = $(this).val();
   });
-  $("#mountain-frequency-slider").on("input", function() {
-    mountainFrequency.value = $(this).val();
+  $("#island-frequency-slider").on("input", function() {
+    islandFrequency.value = $(this).val();
   });
   $("#water-level-slider").on("input", function() {
     waterLevelScale = $(this).val();
@@ -89,23 +97,46 @@ function init() {
       type: "v3",
       value: camera.position
     },
+    grassAmount: grassAmount,
     mountainHeight: mountainHeight,
-    mountainFrequency: mountainFrequency,
+    islandFrequency: islandFrequency,
     derivatives: true
-  }
+  };
+
+  var skyUniforms = {
+    altitude: {
+      type: "f",
+      value: 40.0
+    },
+    height: {
+      type: "f",
+      value: 2
+    },
+    cloudFrequency: {
+      type: "f",
+      value: 5.0
+    }
+  };
 
   landMaterial = new THREE.ShaderMaterial({
     uniforms: uniforms,
     vertexShader: simplexNoise() + landVertexShader(),
     fragmentShader: simplexNoise() + landFragmentShader()
   });
+
   oceanMaterial = new THREE.ShaderMaterial({
     uniforms: uniforms,
     vertexShader: simplexNoise4D() + oceanVertexShader(),
     fragmentShader: simplexNoise4D() + oceanFragmentShader()
   });
-      
-      // create a sphere and assign the material
+
+  skyMaterial = new THREE.ShaderMaterial({
+    uniforms: skyUniforms,
+    transparent: true,
+    vertexShader: simplexNoise() + skyVertexShader(),
+    fragmentShader: cellularNoise() + skyFragmentShader()
+  });
+
       land = new THREE.Mesh( 
           new THREE.SphereBufferGeometry(20, 256, 256), 
           landMaterial 
@@ -113,15 +144,21 @@ function init() {
       ocean = new THREE.Mesh(
         new THREE.SphereBufferGeometry(20, 256, 256),
         oceanMaterial);
+      sky = new THREE.Mesh(
+        new THREE.SphereBufferGeometry(25, 256, 256),
+        skyMaterial);
+
       scene.add(land);
       scene.add(ocean);
+      scene.add(sky);
 
       ocean.translateZ(-100);
       land.translateZ(-100);
+      sky.translateZ(-100);
 
-      // create the renderer and attach it to the DOM
       renderer = new THREE.WebGLRenderer();
       renderer.setSize(width, height);
+      // fix transparency issue
       trackballControls = new THREE.TrackballControls(camera, container);
       trackballControls.rotateSpeed = 1.0;
       trackballControls.zoomSpeed = 1.0;
@@ -129,7 +166,6 @@ function init() {
       trackballControls.staticMoving = true;
       //controls.target.set(0,0,0);
       container.appendChild(renderer.domElement);
-      console.log(ocean.geometry.attributes.radius);
 
 
 }
@@ -137,7 +173,7 @@ function init() {
 function render() {
   landMaterial.uniforms['time'].value = .00025 * (Date.now() - start);
   landMaterial.uniforms['mountainHeight'].value = mountainHeight.value;
-  landMaterial.uniforms['mountainFrequency'].value = mountainFrequency.value;
+  landMaterial.uniforms['islandFrequency'].value = islandFrequency.value;
   ocean.scale.x = waterLevelScale;
   ocean.scale.y = waterLevelScale;
   ocean.scale.z = waterLevelScale;

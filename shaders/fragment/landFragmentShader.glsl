@@ -55,20 +55,12 @@ void main() {
    // interpolation distance
    float interpolationDist = 0.3;
 
-   /*vec2 oceanRange = vec2(-4.0, -0.2);
-   vec2 sandRange = vec2(-0.2, 0.08);
-   vec2 landRange = vec2(0.08, 0.5);
-   vec2 gravelRange = vec2(0.5, 0.8);
-   vec2 snowRange = vec2(0.8, 2.0);*/
-   //vec2 oceanRange = vec2(-4.0, 0.5);
-   vec2 sandRange = vec2(0.0, 0.28);
+   vec2 sandRange = vec2(-10.0, 0.28);
    vec2 landRange = vec2(0.28, 0.7);
    vec2 gravelRange = vec2(0.7, 1.0);
    vec2 snowRange = vec2(1.0, 2.2);
 
    // apply correct component based on elevation
-  /* float ocean = smoothstep(oceanRange.x - interpolationDist, oceanRange.x, elevation) - 
-      smoothstep(oceanRange.y - interpolationDist, oceanRange.y,  elevation);*/
    float sand = smoothstep(sandRange.x - interpolationDist, sandRange.x, elevation) - 
       smoothstep(sandRange.y - interpolationDist, sandRange.y, elevation);
    float land = smoothstep(landRange.x - interpolationDist, landRange.x, elevation) - 
@@ -86,7 +78,7 @@ void main() {
    finalColor = mix(finalColor, snowColor, snow);
 
 
-   gl_FragColor = vec4(ambientColor + lambertian * finalColor + specular  * specularColor, 1.0);
-   //gl_FragColor = vec4(finalColor, 1.0);
+   //gl_FragColor = vec4(ambientColor + lambertian * finalColor + specular  * specularColor, 1.0);
+   gl_FragColor = vec4(finalColor, 1.0);
 
 }
