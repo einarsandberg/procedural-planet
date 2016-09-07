@@ -17,9 +17,8 @@ void main() {
     vec2 F = 0.7 - cellular2x2(5.0 * st);	
     float n = 1.5*F.x*100.0-50.0;
     vec4 pattern = vec4(1.0, 1.0, 1.0, 1.0);
-    pattern *= n;
-
+    pattern *= n*0.06;
 
    // finalColor = mix(finalColor, cloudColor, clouds);
-    gl_FragColor = vec4(finalColor, 0.1) * pattern;// pattern;
+    gl_FragColor = vec4(finalColor, 0.2) * pattern;// pattern;
 }
