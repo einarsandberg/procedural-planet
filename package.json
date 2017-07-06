@@ -2,12 +2,15 @@
   "name": "procedural-planet",
   "version": "1.0.0",
   "description": "project",
-  "main": "main.js",
-  "scripts": {},
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
   "author": "",
   "license": "MIT",
   "dependencies": {
     "browserify": "^13.1.0",
-    "browserify-shader": "^0.1.2"
+    "browserify-shader": "^0.1.2",
+    "express": "^4.15.3"
   }
 }

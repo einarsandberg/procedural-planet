@@ -134,7 +134,7 @@ function init() {
     uniforms: skyUniforms,
     transparent: true,
     vertexShader: simplexNoise() + skyVertexShader(),
-    fragmentShader: cellularNoise() + skyFragmentShader()
+    fragmentShader: cellularNoise() + simplexNoise2D() + skyFragmentShader()
   });
 
       land = new THREE.Mesh( 
@@ -144,17 +144,17 @@ function init() {
       ocean = new THREE.Mesh(
         new THREE.SphereBufferGeometry(20, 256, 256),
         oceanMaterial);
-      sky = new THREE.Mesh(
+      /*sky = new THREE.Mesh(
         new THREE.SphereBufferGeometry(25, 256, 256),
-        skyMaterial);
+        skyMaterial);*/
 
       scene.add(land);
       scene.add(ocean);
-      scene.add(sky);
+      //scene.add(sky);
 
       ocean.translateZ(-100);
       land.translateZ(-100);
-      sky.translateZ(-100);
+      //sky.translateZ(-100);
 
       renderer = new THREE.WebGLRenderer();
       renderer.setSize(width, height);
